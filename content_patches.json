@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "challenges": [
     {
       "id": 25,
@@ -45,6 +45,11 @@
       "id": 46,
       "name": "6.2 APT-1",
       "description": "Mandiant's APT-1 analysis was an unprecedented report that conclusively linked many attacks in the US to a specific threat actor that was very likely supported by the Chinese government to further Chinese interest. \r\n\r\nRead the report here.\r\nhttps://services.google.com/fh/files/misc/mandiant-apt1-report.pdf\r\n\r\nMandiant was able to attribute the attacks to a specific unit within the People’s Liberation Army (PLA). Based on the report, what is the name of the unit that Mandiant attributed the attacks to?"
+    },
+    {
+      "id": 2,
+      "name": "MITRE ATT&CK Matrix for Enterprise",
+      "description": "How many sub-techniques are there under the \"Discovery\" tactic in the MITRE ATT&CK Matrix for Enterprise, as of ATT&CK v19.2? (Use the version selector on attack.mitre.org to view that exact release.)"
     }
   ],
   "flags": [
