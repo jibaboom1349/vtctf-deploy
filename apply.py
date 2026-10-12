@@ -78,6 +78,59 @@ def read(name):
     with open(os.path.join(HERE, name), encoding="utf-8") as f:
         return f.read()
 
+def _req(method, path):
+    """Tolerant request (never exits) — used for the bulk reset."""
+    req = urllib.request.Request(URL + path, method=method)
+    req.add_header("Authorization", "Token " + TOK)
+    req.add_header("Accept", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read().decode() or "{}")
+    except Exception:
+        return None
+
+def wipe_all_submissions():
+    """Delete EVERY submission (correct + incorrect, all accounts) -> clears all
+       team scores and restores all tries. Collects ids first, then deletes."""
+    ids, page = [], 1
+    while page <= 10000:
+        r = _req("GET", "/api/v1/submissions?per_page=100&page=%d" % page)
+        data = (r or {}).get("data") or []
+        ids += [s["id"] for s in data if s.get("id") is not None]
+        pg = ((r or {}).get("meta") or {}).get("pagination") or {}
+        if pg.get("next"):
+            page = pg["next"]
+        elif len(data) == 100:
+            page += 1
+        else:
+            break
+    deleted = 0
+    for sid in ids:
+        if _req("DELETE", "/api/v1/submissions/%d" % sid) is not None:
+            deleted += 1
+    return deleted
+
+# ---- 0) one-shot RESET trigger ----------------------------------------------
+#   If repo file reset.id holds a value this droplet hasn't applied yet, wipe all
+#   submissions once, then record the id (outside the repo, so a git reset can't
+#   un-record it). Bump reset.id in the repo to fire another reset later.
+_reset_file  = os.path.join(HERE, "reset.id")
+_marker_file = os.path.join(os.path.dirname(HERE), ".vt_last_reset")
+if os.path.exists(_reset_file):
+    _want = open(_reset_file, encoding="utf-8").read().strip()
+    _have = ""
+    try:
+        _have = open(_marker_file, encoding="utf-8").read().strip()
+    except Exception:
+        pass
+    if _want and _want != _have:
+        _n = wipe_all_submissions()
+        try:
+            open(_marker_file, "w", encoding="utf-8").write(_want)
+        except Exception:
+            pass
+        print("RESET #%s applied: deleted %d submission(s) — all scores + tries cleared (every account)" % (_want, _n))
+
 # ---- 1) ensure the rain GIF is hosted, so the theme background resolves ------
 #   The DB can list a matrix_rain.gif whose file is gone (e.g. an import that
 #   restored records but not uploads). So require it to actually download;
