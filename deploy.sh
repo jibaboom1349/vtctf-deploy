@@ -85,6 +85,7 @@ services:
       cache: { condition: service_started }
     networks: [internal, web]
     expose: ["8000"]
+    ports: ["127.0.0.1:8000:8000"]   # local-only: lets the on-box updater reach CTFd directly (no hairpin/HTTPS)
 
   db:
     image: mariadb:10.11
