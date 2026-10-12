@@ -89,6 +89,27 @@ def _req(method, path):
     except Exception:
         return None
 
+def _patch(path, body):
+    """Tolerant PATCH with JSON body (never exits)."""
+    req = urllib.request.Request(URL + path, data=json.dumps(body).encode(), method="PATCH")
+    req.add_header("Authorization", "Token " + TOK)
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Accept", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read().decode() or "{}")
+    except Exception:
+        return None
+
+# ---- self-heal: an earlier build stored an INVALID challenge_visibility -------
+#   ('admins_only' is not a valid CTFd value — only public/private/admins are, and
+#   the bad value makes CTFd throw a 500 site-wide). Correct it to 'admins' every run.
+_cvd = _req("GET", "/api/v1/configs/challenge_visibility")
+_cv = ((_cvd or {}).get("data") or {}).get("value")
+if _cv == "admins_only":
+    _patch("/api/v1/configs", {"challenge_visibility": "admins"})
+    print("fixed invalid challenge_visibility: admins_only -> admins")
+
 def wipe_all_submissions():
     """Delete EVERY submission (correct + incorrect, all accounts) -> clears all
        team scores and restores all tries. Collects ids first, then deletes."""
@@ -125,10 +146,7 @@ if os.path.exists(_reset_file):
         pass
     if _want and _want != _have:
         _n = wipe_all_submissions()
-        try:   # land in the pristine pre-start state: timer idle + challenges hidden until Start
-            api("PATCH", "/api/v1/configs", {"start": "", "end": "", "challenge_visibility": "admins_only"})
-        except SystemExit:
-            pass
+        _patch("/api/v1/configs", {"start": "", "end": "", "challenge_visibility": "admins"})  # pristine pre-start state
         try:
             open(_marker_file, "w", encoding="utf-8").write(_want)
         except Exception:

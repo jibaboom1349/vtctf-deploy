@@ -379,7 +379,7 @@
     var now=Math.floor(Date.now()/1000);
     fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
       headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-      body:JSON.stringify({start:String(now-2), end:String(now-1), challenge_visibility:'admins_only'})})   // past -> lockout + hide challenges
+      body:JSON.stringify({start:String(now-2), end:String(now-1), challenge_visibility:'admins'})})   // past -> lockout + hide challenges
       .then(function(r){return r.json();})
       .then(function(){ location.reload(); })
       .catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not end the quiz.'); });
@@ -394,7 +394,7 @@
     wipeAllSubmissions().then(function(n){
       return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
         headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-        body:JSON.stringify({start:'', end:'', challenge_visibility:'admins_only'})}).then(function(r){return r.json();})  // idle 45:00 + hide challenges until Start
+        body:JSON.stringify({start:'', end:'', challenge_visibility:'admins'})}).then(function(r){return r.json();})  // idle 45:00 + hide challenges until Start
         .then(function(){ alert('Reset complete — cleared '+n+' submission(s) and reset the timer to 45:00. Reloading.'); location.reload(); });
     }).catch(function(){ if(btn){btn.disabled=false;btn.textContent=orig;} alert('Reset failed — try again.'); });
   }
