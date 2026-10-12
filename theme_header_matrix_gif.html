@@ -369,15 +369,23 @@
     }).catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not start the quiz.'); });
   }
 
-  /* owner-only: wipe all tries + scores WITHOUT touching the timer */
+  /* owner-only: FULL reset to the pristine pre-start state —
+     wipe all tries + scores (every account incl. yihaolim) AND stop the timer. */
+  function stopTimer(){
+    return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
+      headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
+      body:JSON.stringify({start:'',end:''})}).then(function(r){return r.json();});
+  }
   function clearTries(btn){
-    if(!confirm("Clear ALL submissions — correct AND incorrect — for EVERY account (yihaolim included)? This resets all scores and restores all tries.")) return;
+    if(!confirm("Reset EVERYTHING now?\n\nDeletes all submissions (tries + scores, every account incl. yihaolim) AND stops the quiz timer — back to the idle pre-start state.")) return;
     var orig = btn ? btn.textContent : '';
-    if(btn){ btn.disabled=true; btn.textContent='Clearing…'; }
+    if(btn){ btn.disabled=true; btn.textContent='Resetting…'; }
     wipeAllSubmissions().then(function(n){
-      if(!n){ alert('No submissions to clear.'); if(btn){btn.disabled=false;btn.textContent=orig;} return; }
-      alert('Cleared '+n+' submission(s) (all accounts). Reloading.'); location.reload();
-    });
+      return stopTimer().then(function(){
+        alert('Reset complete — cleared '+n+' submission(s) and stopped the timer. Reloading.');
+        location.reload();
+      });
+    }).catch(function(){ if(btn){btn.disabled=false;btn.textContent=orig;} alert('Reset failed — try again.'); });
   }
 
   /* pages where NO redirect/gating may ever happen — otherwise login loops forever */
@@ -433,7 +441,7 @@
         btn.textContent = quizRunning ? '↻ Restart Quiz (resets all)' : '▶ Start 45-min Quiz';
         btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
     var clr=document.getElementById('vt-clear');
-    if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
+    if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.textContent='✖ Reset All & Stop Timer'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
     (function tick(){
       var e=endMs();
       if(!e){ host.textContent='45:00'; host.className='vt-timer vt-idle'; return; }
