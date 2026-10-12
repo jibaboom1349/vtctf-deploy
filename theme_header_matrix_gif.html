@@ -429,7 +429,9 @@
     var host=document.getElementById('vt-timer'); if(!host) return;
     var btn=document.getElementById('vt-start');
     var quizRunning = endMs() && Date.now() < endMs();   // a quiz window is currently open
-    if(btn){ if(isOwner && !quizRunning){ btn.style.display='inline-block'; btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
+    if(btn){ if(isOwner){ btn.style.display='inline-block';         // owner can start OR restart at ANY time
+        btn.textContent = quizRunning ? '↻ Restart Quiz (resets all)' : '▶ Start 45-min Quiz';
+        btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
     var clr=document.getElementById('vt-clear');
     if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
     (function tick(){
