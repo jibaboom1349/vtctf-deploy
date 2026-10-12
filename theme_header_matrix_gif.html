@@ -387,6 +387,30 @@
     location.replace('/teams'); return true;     // locked elsewhere -> redirect to standings, bail run()
   }
 
+  /* true when an end user is in the post-quiz lockdown (quiz ended, not the owner) */
+  function isLocked(){ return !isOwner && !!endMs() && Date.now() >= endMs(); }
+
+  /* once locked: strip the whole UI down to the standings + a Logout link.
+     CTFd often buries Logout inside the profile dropdown, so we hide all of
+     CTFd's own nav items and add our OWN guaranteed standalone Logout link. */
+  function lockdownNav(){
+    var navbar=document.querySelector('.navbar'); if(!navbar) return;
+    var host=navbar.querySelector('.navbar-nav')||navbar.querySelector('.container')||navbar;
+    navbar.querySelectorAll('a, button, .dropdown, .dropdown-menu').forEach(function(el){
+      if(el.id==='vt-navtimer' || el.id==='vt-logout') return;         // keep the countdown pill + our logout
+      if(el.classList && el.classList.contains('navbar-brand')){        // keep the logo visible but non-clickable
+        el.removeAttribute('href'); el.style.pointerEvents='none'; return;
+      }
+      el.style.display='none';                                          // hide every other link/button/dropdown
+    });
+    if(!document.getElementById('vt-logout')){                          // guaranteed working Logout (CTFd /logout is a GET)
+      var a=document.createElement('a');
+      a.id='vt-logout'; a.className='nav-link'; a.href='/logout'; a.textContent='Logout';
+      a.style.cssText='display:inline-block;margin-left:auto;';
+      host.appendChild(a);
+    }
+  }
+
   /* giant timer + Start button on the landing page */
   function mountLandingTimer(){
     var host=document.getElementById('vt-timer'); if(!host) return;
@@ -439,9 +463,11 @@
       var thead=table.querySelector('thead')||table.createTHead();
       thead.innerHTML='<tr><th style="width:70px">#</th><th>Team</th><th class="text-end" style="width:170px">Team Score</th></tr>';
       tbody.innerHTML='';
+      var locked=isLocked();
       teams.forEach(function(t,i){
         var tr=document.createElement('tr');
-        tr.innerHTML='<td>'+(i+1)+'</td><td>'+t.html+'</td><td class="text-end fw-bold">'+t.score+'</td>';
+        var nameCell = locked ? esc(t.name) : t.html;   // when locked, team names are plain text (not clickable)
+        tr.innerHTML='<td>'+(i+1)+'</td><td>'+nameCell+'</td><td class="text-end fw-bold">'+t.score+'</td>';
         tbody.appendChild(tr);
       });
     });
@@ -566,6 +592,7 @@
     mountLandingTimer();
     [600,1600,3000].forEach(function(d){ setTimeout(themeCharts,d); });  // theme any ECharts charts on this page
     if(p==='/teams'){ teamsList(); }
+    if(isLocked()){ waitFor('.navbar a', lockdownNav); }   // post-quiz: only Logout stays clickable
     var m=p.match(/^\/teams\/(\d+)$/); if(m){ teamPage(m[1]); }
     if(p==='/challenges'){
       Promise.all([getJSON('/api/v1/challenges'), getJSON('/api/v1/teams/me/fails')]).then(function(r){
