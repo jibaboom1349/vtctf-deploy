@@ -198,7 +198,9 @@ if [ -n "$TWOFA" ]; then
 cat > Caddyfile <<CADDY
 ${CADDY_SITE} {
     encode gzip
-    request_body { max_size 100MB }
+    request_body {
+        max_size 100MB
+    }
 
     @twofa path /__2fa/*
     handle @twofa {
@@ -222,7 +224,9 @@ else
 cat > Caddyfile <<CADDY
 ${CADDY_SITE} {
     reverse_proxy ctfd:8000
-    request_body { max_size 100MB }
+    request_body {
+        max_size 100MB
+    }
     encode gzip
 }
 CADDY
