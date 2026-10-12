@@ -363,7 +363,7 @@
       var now=Math.floor(Date.now()/1000), end=now+QUIZ_MIN*60;
       return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
         headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-        body:JSON.stringify({start:String(now),end:String(end)})})
+        body:JSON.stringify({start:String(now),end:String(end),challenge_visibility:'private'})})  // open challenges to players
         .then(function(r){return r.json();})
         .then(function(){ location.reload(); });
     }).catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not start the quiz.'); });
@@ -379,7 +379,7 @@
     var now=Math.floor(Date.now()/1000);
     fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
       headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-      body:JSON.stringify({start:String(now-2), end:String(now-1)})})   // both in the past -> lockout
+      body:JSON.stringify({start:String(now-2), end:String(now-1), challenge_visibility:'admins_only'})})   // past -> lockout + hide challenges
       .then(function(r){return r.json();})
       .then(function(){ location.reload(); })
       .catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not end the quiz.'); });
@@ -394,7 +394,7 @@
     wipeAllSubmissions().then(function(n){
       return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
         headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-        body:JSON.stringify({start:'', end:''})}).then(function(r){return r.json();})     // clear start/end -> idle 45:00
+        body:JSON.stringify({start:'', end:'', challenge_visibility:'admins_only'})}).then(function(r){return r.json();})  // idle 45:00 + hide challenges until Start
         .then(function(){ alert('Reset complete — cleared '+n+' submission(s) and reset the timer to 45:00. Reloading.'); location.reload(); });
     }).catch(function(){ if(btn){btn.disabled=false;btn.textContent=orig;} alert('Reset failed — try again.'); });
   }
@@ -624,15 +624,22 @@
   }
 
   /* end users only get the Challenges tab once the quiz has started (end-time set) */
+  function startMs(){ return INIT.start ? (INIT.start*1000) : 0; }
+  function quizLive(){                          // a quiz is open for play RIGHT NOW
+    var s=startMs(), e=endMs(), now=Date.now();
+    if(!s) return false;                        // never started
+    if(now < s) return false;                   // starts in the future
+    if(e && now >= e) return false;             // already ended
+    return true;                                // within [start, end)
+  }
   function gateChallenges(){
-    if(isOwner) return false;                 // owner always has access
-    if(endMs()) return false;                 // quiz started -> normal access (end handled by enforceLockout)
+    if(isOwner) return false;                   // owner always has access
+    if(quizLive()) return false;                // quiz running -> challenges open to end users
+    // NOT running (before you click Start, or after it ends): end users see NO challenges.
     document.querySelectorAll('.navbar a.nav-link[href$="/challenges"]').forEach(function(a){ a.style.display='none'; });
     var p=location.pathname.replace(/\/+$/,'');
-    if(p==='/challenges'){ location.replace('/'); return true; }
-    if(p===''){ if(!window.__vtPoll){ window.__vtPoll=1;   // auto-enter when quiz starts; jittered 15-30s so 300 clients don't reload in one spike
-      setTimeout(function(){ location.reload(); }, 15000+Math.floor(Math.random()*15000)); } }
-    return false;
+    if(p==='/challenges'){ location.replace('/'); return true; }   // bounce them off the challenges page
+    return false;                               // watchEnd() reloads them in automatically once you Start
   }
 
   function run(){

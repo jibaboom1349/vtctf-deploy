@@ -125,11 +125,15 @@ if os.path.exists(_reset_file):
         pass
     if _want and _want != _have:
         _n = wipe_all_submissions()
+        try:   # land in the pristine pre-start state: timer idle + challenges hidden until Start
+            api("PATCH", "/api/v1/configs", {"start": "", "end": "", "challenge_visibility": "admins_only"})
+        except SystemExit:
+            pass
         try:
             open(_marker_file, "w", encoding="utf-8").write(_want)
         except Exception:
             pass
-        print("RESET #%s applied: deleted %d submission(s) — all scores + tries cleared (every account)" % (_want, _n))
+        print("RESET #%s applied: deleted %d submission(s); timer->idle 45:00; challenges hidden until Start" % (_want, _n))
 
 # ---- 1) ensure the rain GIF is hosted, so the theme background resolves ------
 #   The DB can list a matrix_rain.gif whose file is gone (e.g. an import that
