@@ -1,0 +1,582 @@
+<!-- ============================================================
+     VirusTotal CTF — MATRIX theme header (GIF background version)
+     Paste into: Admin panel → Config → Theme → "Theme Header"
+
+     STEP 1: upload matrix_rain.gif to CTFd first (see instructions),
+             copy the URL it gives you (looks like /files/xxxxxxxx/matrix_rain.gif)
+     STEP 2: paste that URL into the one place marked  >>> GIF_URL <<<  below
+     STEP 3: paste this whole block into the Theme Header box and Save
+     ============================================================ -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --m-bg:#000600; --m-bg2:#020d05; --m-surface:rgba(2,18,8,.90);
+    --m-green:#00ff6a; --m-green-2:#00c853; --m-green-dim:#1fae5a;
+    --m-text:#e9fff2; --m-muted:#bff3d4; --m-border:rgba(0,255,106,.32); --m-border-soft:rgba(0,255,106,.16);
+    --bs-primary:#00ff6a; --bs-primary-rgb:0,255,106;
+    --bs-body-bg:#000600; --bs-body-color:#b8ffcf; --bs-border-color:rgba(0,255,106,.32);
+  }
+
+  /* === the rain: looping GIF as a fixed, full-screen background === */
+  html,body{ color:var(--m-text); font-family:'Share Tech Mono','JetBrains Mono',monospace; }
+  body{
+    background:#000600 url('>>> GIF_URL <<<') center center / cover no-repeat fixed !important;
+  }
+  /* dim layer over the rain so text stays readable — BEHIND content (negative z-index)
+     so it never traps clicks or interferes with Bootstrap modals */
+  body::before{ content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; background:rgba(0,6,0,.80); }
+  /* scanline + vignette, also behind content */
+  body::after{ content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,20,8,.18) 2px 3px),
+      radial-gradient(120% 120% at 50% 40%, transparent 55%, rgba(0,0,0,.6)); }
+
+  h1,h2,h3,h4,.navbar-brand{ font-family:'Share Tech Mono',monospace; letter-spacing:.04em; color:#eaffef; text-shadow:0 0 8px rgba(0,255,106,.55), 0 2px 10px rgba(0,0,0,.9); }
+  a{ color:var(--m-green); text-decoration:none; }
+  a:hover{ color:#eafff0; text-shadow:0 0 8px rgba(0,255,106,.8); }
+  code,pre,.font-mono{ font-family:'Share Tech Mono',monospace; color:var(--m-green); }
+
+  .navbar{ background:rgba(0,6,0,.82)!important; backdrop-filter:blur(4px); border-bottom:1px solid var(--m-border); }
+  .navbar-brand{ font-weight:400; color:var(--m-green)!important; }
+  .navbar .nav-link{ color:var(--m-muted)!important; text-transform:uppercase; font-size:.9rem; letter-spacing:.08em; }
+  .navbar .nav-link:hover{ color:var(--m-green)!important; text-shadow:0 0 8px rgba(0,255,106,.7); }
+
+  .card,.challenge-button,button.challenge-button{
+    background:var(--m-surface)!important; border:1px solid var(--m-border)!important; border-radius:4px!important; color:var(--m-text)!important;
+    box-shadow:0 0 0 1px rgba(0,255,106,.06), 0 0 24px -8px rgba(0,255,106,.25); transition:.15s; }
+  .card:hover,.challenge-button:hover{ border-color:var(--m-green)!important; box-shadow:0 0 28px -4px rgba(0,255,106,.5); transform:translateY(-2px); }
+  .card-header,.card-footer{ background:transparent!important; border-color:var(--m-border-soft)!important; }
+  .solved-challenge,.challenge-button.solved-challenge{ border-color:var(--m-green)!important; box-shadow:inset 0 0 0 1px rgba(0,255,106,.4), 0 0 26px -6px rgba(0,255,106,.5)!important; }
+  /* wrap long challenge titles inside their tiles instead of overflowing */
+  .challenge-button,button.challenge-button{ height:auto!important; min-height:5.5rem; white-space:normal!important; overflow-wrap:anywhere; word-break:break-word; padding:.75rem!important; display:flex!important; flex-direction:column; justify-content:center; gap:.25rem; }
+  .challenge-button *,button.challenge-button *{ white-space:normal!important; overflow-wrap:anywhere; word-break:break-word; max-width:100%; }
+
+  .btn-primary{ background:transparent; border:1px solid var(--m-green); color:var(--m-green); text-transform:uppercase; letter-spacing:.08em; font-weight:400; text-shadow:0 0 6px rgba(0,255,106,.5); box-shadow:0 0 18px -8px rgba(0,255,106,.6); }
+  .btn-primary:hover{ background:var(--m-green); color:#001a08; text-shadow:none; box-shadow:0 0 22px -4px rgba(0,255,106,.8); }
+  .btn-outline-primary,.btn-outline-dark,.btn-outline-secondary{ background:transparent; border:1px solid var(--m-border); color:var(--m-green); text-transform:uppercase; letter-spacing:.08em; }
+  .btn-outline-primary:hover,.btn-outline-dark:hover,.btn-outline-secondary:hover{ border-color:var(--m-green); background:rgba(0,255,106,.1); color:#eafff0; }
+
+  .badge,.badge.bg-primary{ background:rgba(0,255,106,.12)!important; color:var(--m-green)!important; border:1px solid var(--m-border); border-radius:3px; font-weight:400; }
+  .badge.bg-secondary{ background:rgba(79,143,104,.12)!important; color:var(--m-muted)!important; border-color:var(--m-border-soft); }
+
+  .form-control,.form-select{ background:#010a04; border:1px solid var(--m-border); color:var(--m-green); border-radius:3px; caret-color:var(--m-green); }
+  .form-control:focus,.form-select:focus{ background:#010a04; color:#eafff0; border-color:var(--m-green); box-shadow:0 0 0 .2rem rgba(0,255,106,.18); }
+  .form-control::placeholder{ color:#2f6043; }
+
+  .table{ color:var(--m-text); --bs-table-bg:transparent; --bs-table-striped-bg:rgba(0,255,106,.04); --bs-table-hover-bg:rgba(0,255,106,.08); }
+  .table thead,.table-dark{ background:rgba(0,30,12,.9)!important; color:var(--m-green); }
+  .table td,.table th{ border-color:var(--m-border-soft); }
+
+  .alert{ border-radius:3px; border:1px solid var(--m-border); background:rgba(0,20,8,.9); color:var(--m-text); }
+  .alert-success{ color:#9dffc2; border-color:var(--m-green); }
+  .alert-danger{ color:#ff8f8f; border-color:rgba(255,80,80,.6); background:rgba(30,0,0,.7); }
+  .modal-content{ background:var(--m-bg2); border:1px solid var(--m-border); border-radius:4px; }
+
+  /* ---- broad site-wide component coverage (every player page) ---- */
+  .jumbotron,.container-fluid{ background:transparent!important; }
+  hr{ border-color:var(--m-border-soft); opacity:1; }
+  .text-muted{ color:var(--m-muted)!important; }
+  label,.form-label,.col-form-label{ color:var(--m-text); }
+  p,span,td,th,li,.card-text,.card-title,small,a{ color:var(--m-text); text-shadow:0 0 6px rgba(0,255,106,.35); }
+  .navbar .nav-link,.btn,label,.form-label{ text-shadow:0 0 6px rgba(0,255,106,.35); }
+  .list-group-item{ background:var(--m-surface); border-color:var(--m-border-soft); color:var(--m-text); }
+  .dropdown-menu{ background:var(--m-bg2); border:1px solid var(--m-border); }
+  .dropdown-item{ color:var(--m-text); }
+  .dropdown-item:hover,.dropdown-item:focus{ background:rgba(0,255,106,.12); color:#eafff0; }
+  .nav-tabs{ border-color:var(--m-border); }
+  .nav-tabs .nav-link{ color:var(--m-muted); }
+  .nav-tabs .nav-link.active{ background:var(--m-surface); color:var(--m-green); border-color:var(--m-border) var(--m-border) transparent; }
+  .nav-pills .nav-link.active{ background:rgba(0,255,106,.15); color:var(--m-green); }
+  .pagination .page-link{ background:var(--m-surface); border-color:var(--m-border); color:var(--m-green); }
+  .pagination .page-item.active .page-link{ background:var(--m-green); border-color:var(--m-green); color:#001a08; }
+  .breadcrumb{ background:var(--m-surface); border:1px solid var(--m-border-soft); border-radius:3px; }
+  .breadcrumb-item,.breadcrumb-item a,.breadcrumb-item.active{ color:var(--m-muted); }
+  .btn-success{ background:var(--m-green); border:1px solid var(--m-green); color:#001a08; }
+  .btn-success:hover{ filter:brightness(1.1); color:#001a08; }
+  .btn-info,.btn-secondary{ background:transparent; border:1px solid var(--m-border); color:var(--m-green); text-transform:uppercase; letter-spacing:.06em; }
+  .btn-info:hover,.btn-secondary:hover{ background:rgba(0,255,106,.1); border-color:var(--m-green); color:#eafff0; }
+  .btn-danger{ background:transparent; border:1px solid rgba(255,80,80,.6); color:#ff8f8f; }
+  .btn-danger:hover{ background:rgba(255,80,80,.15); color:#ffbdbd; }
+  .input-group-text{ background:var(--m-surface); border:1px solid var(--m-border); color:var(--m-green); }
+  .modal-header,.modal-footer{ border-color:var(--m-border-soft); }
+  .progress{ background:#010a04; }
+  footer,.footer,#footer{ background:transparent!important; border-top:1px solid var(--m-border-soft); color:var(--m-muted); }
+  footer a,.footer a{ color:var(--m-green); }
+  table a,.card a{ color:var(--m-green); }
+  /* scoreboard / stats chart panels */
+  #score-graph,#keys-pie-graph,#categories-pie-graph,.graph-container,[_echarts_instance_]{ background:transparent !important; }
+  /* challenge modal specifics */
+  .challenge-desc,.modal-body,.modal-body p,.modal-body li{ color:var(--m-text); }
+  .embedded-resource,.modal-body img{ filter:none; }
+
+  /* landing-page helpers */
+  .vt-hero{ padding:4.5rem 1rem 2.5rem; text-align:center; border-radius:16px;
+    background:radial-gradient(70% 70% at 50% 42%, rgba(0,6,0,.72), rgba(0,6,0,.30) 75%, transparent); }
+  .vt-eyebrow{ display:inline-flex; align-items:center; gap:.5rem; font-size:.8rem; letter-spacing:.18em; text-transform:uppercase; color:var(--m-green); border:1px solid var(--m-border); padding:.35rem .9rem; border-radius:2px; background:rgba(0,255,106,.06); }
+  .vt-cursor{ display:inline-block; width:.6em; height:1em; background:var(--m-green); margin-left:.2em; box-shadow:0 0 8px var(--m-green); animation:vtblink 1s steps(1) infinite; vertical-align:-.1em; }
+  @keyframes vtblink{ 50%{opacity:0;} }
+  .vt-title{ font-family:'VT323',monospace; font-size:clamp(3.2rem,10vw,6rem); line-height:.95; margin:1.1rem 0 .4rem; color:#f3fff7; text-shadow:0 0 14px rgba(0,255,106,.85), 0 0 2px #fff, 0 3px 16px rgba(0,0,0,.95); letter-spacing:.02em; }
+  .vt-sub{ color:#daffe8; font-size:1.05rem; max-width:640px; margin:0 auto 1.8rem; line-height:1.7; text-shadow:0 1px 8px rgba(0,0,0,.95); }
+  .vt-cta{ display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; }
+  .vt-stats{ display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; margin:2.5rem 0; }
+  .vt-stat{ background:var(--m-surface); border:1px solid var(--m-border); border-radius:3px; padding:1rem 1.6rem; min-width:150px; }
+  .vt-stat b{ display:block; font-family:'VT323',monospace; font-size:2.4rem; color:var(--m-green); line-height:1; text-shadow:0 0 10px rgba(0,255,106,.6); }
+  .vt-stat span{ color:var(--m-muted); font-size:.8rem; text-transform:uppercase; letter-spacing:.1em; }
+  .vt-tracks{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1rem; margin:1rem 0 3rem; }
+  .vt-track{ background:var(--m-surface); border:1px solid var(--m-green); border-radius:3px; padding:1.2rem; transition:.15s; box-shadow:0 0 22px -7px rgba(0,255,106,.5); }
+  .vt-track:hover{ border-color:var(--m-green); box-shadow:0 0 30px -4px rgba(0,255,106,.7); transform:translateY(-2px); }
+  .vt-track h4{ font-size:1rem; margin:.3rem 0 .4rem; color:#f3fff7; text-shadow:0 0 10px rgba(0,255,106,.7); }
+  .vt-track p{ color:#dcffe8; font-size:.88rem; margin:0; line-height:1.55; text-shadow:0 0 6px rgba(0,255,106,.4); }
+  .vt-track .vt-idx{ color:var(--m-green); font-size:.8rem; }
+  .vt-section-title{ text-align:center; font-size:1.3rem; margin:2rem 0 1.4rem; color:var(--m-green); text-transform:uppercase; letter-spacing:.14em; }
+
+  /* ---- quiz timer (giant on landing) + start button ---- */
+  .vt-timerwrap{ margin:1.6rem auto .4rem; }
+  .vt-timer{ font-family:'VT323',monospace; font-size:clamp(4rem,17vw,9.5rem); line-height:1; color:#eafff2;
+    text-shadow:0 0 24px rgba(0,255,106,.9), 0 0 4px #fff; letter-spacing:.06em; }
+  .vt-timer.vt-idle{ opacity:.6; }
+  .vt-timer.vt-ending{ color:#ff6b6b !important; text-shadow:0 0 24px rgba(255,80,80,.95), 0 0 4px #fff !important; animation:vttick 1s steps(1) infinite; }
+  .vt-timer.vt-over{ color:#ff5050 !important; text-shadow:0 0 24px rgba(255,80,80,.95) !important; }
+  @keyframes vttick{ 50%{opacity:.45;} }
+  .vt-timerlabel{ font-size:.8rem; letter-spacing:.16em; text-transform:uppercase; color:var(--m-green); margin-bottom:1rem; }
+  .vt-clearbtn{ margin:.3rem .4rem 0; background:#b81d27; border:1px solid #ff5a5a; color:#fff !important; text-transform:uppercase; letter-spacing:.06em; box-shadow:0 0 18px -6px rgba(255,80,80,.75); text-shadow:none !important; }
+  .vt-clearbtn:hover{ background:#d8222e; color:#fff !important; }
+
+  /* ---- small countdown pill in the top nav (site-wide once started) ---- */
+  #vt-navtimer{ display:inline-flex; align-items:center; gap:.4rem; font-family:'JetBrains Mono','Share Tech Mono',monospace;
+    font-weight:600; color:#001a08; background:var(--m-green); border-radius:999px; padding:.25rem .8rem; margin:auto .5rem;
+    box-shadow:0 0 14px -3px rgba(0,255,106,.7); }
+  #vt-navtimer.vt-ending{ background:#ff5a5a; color:#1a0000; box-shadow:0 0 16px -2px rgba(255,80,80,.8); animation:vttick 1s steps(1) infinite; }
+  #vt-navtimer::before{ content:"\23F1"; }
+
+  /* ---- "0 Attempts left" box on exhausted challenge tiles ---- */
+  .vt-no-attempts{ margin-top:.5rem; background:rgba(255,40,40,.18); border:1px solid #ff5a5a; color:#ffd2d2 !important;
+    font-weight:700; border-radius:4px; padding:.22rem .4rem; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em;
+    text-shadow:0 0 6px rgba(255,60,60,.6) !important; }
+
+  /* ---- make EVERY word bright + glowing (no faded text anywhere) ---- */
+  body{ color:#eafff2; }
+  .container, .container h1, .container h2, .container h3, .container h4, .container h5, .container h6,
+  .container p, .container span, .container li, .container td, .container th, .container small,
+  .container label, .container a, .container .text-muted,
+  .vt-sub, .vt-eyebrow, .vt-stat b, .vt-stat span, .vt-track h4, .vt-track p, .vt-idx, .vt-section-title,
+  .card, .card *:not(.btn):not(.badge){
+    color:#eafff2 !important;
+    text-shadow:0 0 7px rgba(0,255,106,.6), 0 0 2px rgba(0,255,106,.4) !important;
+  }
+  .btn, .badge{ text-shadow:0 0 7px rgba(0,255,106,.55) !important; }
+  .vt-title{ color:#f6fff9 !important; text-shadow:0 0 16px rgba(0,255,106,.9), 0 0 3px #fff, 0 3px 16px rgba(0,0,0,.95) !important; }
+
+  /* top bar for end users: show only Users, Team, Challenges, Logout.
+     Hide Teams-listing, Scoreboard, Notifications, Profile, Settings.
+     (/team own-team is kept; [href$="/teams"] only matches the listing.) */
+  .navbar a.nav-link[href$="/scoreboard"],.navbar a.nav-link[href*="scoreboard"],
+  .navbar a.nav-link[href$="/teams"],
+  .navbar a.nav-link[href*="notification"],
+  .navbar a.nav-link[href$="/settings"],
+  .navbar a.nav-link[href$="/profile"],
+  .navbar a.nav-link:has(span[title="Notifications"]),
+  .navbar a.nav-link:has(span[title="Profile"]),
+  .navbar a.nav-link:has(span[title="Settings"]){ display:none!important; }
+  .vt-team-total td{ border-top:2px solid var(--m-green)!important; background:rgba(0,255,106,.08); font-size:1.05rem; }
+</style>
+
+<script>
+/* ---- VirusTotal CTF customisations: quiz timer + lockout, team scores,
+        per-team total, exhausted-attempt badges. Uses CTFd's JSON API. ---- */
+(function(){
+  var INIT = window.init || {};
+  var OWNER = "yihaolim@smu.edu.sg";
+  var isOwner = (INIT.userEmail === OWNER);
+  var QUIZ_MIN = 45;
+
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function getJSON(u){return fetch(u,{credentials:'same-origin',headers:{'Accept':'application/json'}}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});}
+  function endMs(){ return INIT.end ? (INIT.end*1000) : 0; }
+  function fmt(ms){ var t=Math.max(0,ms); var m=Math.floor(t/60000), s=Math.floor((t%60000)/1000); return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+
+  /* --- ordering done here (version-independent), not via CTFd theme_settings --- */
+  function pts(t){var m=String(t||'').match(/(\d+)(?:\.(\d+))?(?:\.(\d+))?/);return m?(+m[1])*1e6+(+(m[2]||0))*1e3+(+(m[3]||0)):1e12;}
+  function catNum(t){var m=String(t||'').match(/\d+/);return m?+m[0]:999;}
+  function orderBoard(){
+    document.querySelectorAll('.challenges-row').forEach(function(row){
+      var kids=Array.prototype.slice.call(row.children);
+      kids.sort(function(a,b){var ba=a.querySelector('.challenge-button')||a,bb=b.querySelector('.challenge-button')||b;return pts(ba.textContent)-pts(bb.textContent);});
+      kids.forEach(function(k){row.appendChild(k);});
+    });
+    var rows=document.querySelectorAll('.challenges-row');
+    if(rows.length>1){
+      var blocks=[],parent=null;
+      rows.forEach(function(row){var blk=(row.closest&&row.closest('.pt-5'))||row.parentElement;if(blk){blocks.push(blk);parent=parent||blk.parentElement;}});
+      if(parent){
+        blocks.sort(function(a,b){var ha=a.querySelector('h1,h2,h3,.category-header'),hb=b.querySelector('h1,h2,h3,.category-header');return catNum(ha&&ha.textContent)-catNum(hb&&hb.textContent);});
+        blocks.forEach(function(blk){if(blk.parentElement===parent)parent.appendChild(blk);});
+      }
+    }
+  }
+  function observeBoard(){
+    var host=document.querySelector('main');if(!host||!window.MutationObserver)return;
+    var scheduled=false,obs;
+    function apply(){obs.disconnect();try{orderBoard();reapplyBadges();}catch(e){}obs.observe(host,{childList:true,subtree:true});scheduled=false;}
+    obs=new MutationObserver(function(){if(scheduled)return;scheduled=true;setTimeout(apply,200);});
+    obs.observe(host,{childList:true,subtree:true});
+  }
+  /* --- reveal: after a correct answer on an intro, refresh so the rest appear --- */
+  var _exhausted={}, _tries={}, introIds={}, chalVal={}, chalName={};
+  function saveTries(){}   // no-op: badges are reconciled from the server (below), never cached in the browser
+  function loadTries(){}
+  function maxFor(cid){                         // tries limit from the challenge's API value
+    var v=chalVal[cid]; if(v==null) return Infinity;
+    if(v===1) return 1; if(v>=2&&v<=3) return 2; if(v>=4) return 3; return Infinity;  // 0pt intro = unlimited
+  }
+  function isIntro(cid){ return chalVal[cid]===0; }   // a 0-point challenge is an intro ("type ready")
+  function isSolved(btn){ return btn && btn.classList && (btn.classList.contains('challenge-solved')||btn.classList.contains('solved-challenge')); }
+  function findTile(cid){                        // locate the tile without relying on a particular attribute
+    var el=document.querySelector('.challenge-button[value="'+cid+'"]')
+        || document.querySelector('[data-challenge-id="'+cid+'"]')
+        || document.querySelector('[data-id="'+cid+'"]')
+        || document.getElementById('challenge-'+cid);
+    if(el) return (el.classList&&el.classList.contains('challenge-button'))?el:((el.querySelector&&el.querySelector('.challenge-button'))||el);
+    var name=chalName[cid];
+    if(name){ var list=document.querySelectorAll('.challenge-button, .challenge, .card'); for(var i=0;i<list.length;i++){ if((list[i].textContent||'').indexOf(name)>-1) return list[i]; } }
+    return null;
+  }
+  function addBox(cid){
+    var btn=findTile(cid);
+    if(btn && !isSolved(btn) && !btn.querySelector('.vt-no-attempts')){
+      var box=document.createElement('div'); box.className='vt-no-attempts'; box.textContent='0 Tries Remaining';
+      (btn.querySelector('.challenge-inner')||btn).appendChild(box);
+    }
+  }
+  function reapplyBadges(){
+    var ids=Object.keys(_exhausted); if(!ids.length) return;
+    var tiles=document.querySelectorAll('.challenge-button, .challenge, .card');  // scan the DOM ONCE, not once per exhausted challenge
+    var texts=null;
+    ids.forEach(function(cid){
+      var btn=document.querySelector('.challenge-button[value="'+cid+'"]')
+           || document.querySelector('[data-challenge-id="'+cid+'"]')
+           || document.querySelector('[data-id="'+cid+'"]')
+           || document.getElementById('challenge-'+cid);
+      if(!btn){ var name=chalName[cid];
+        if(name){ if(!texts){ texts=[]; for(var t=0;t<tiles.length;t++) texts[t]=(tiles[t].textContent||''); }
+          for(var j=0;j<tiles.length;j++){ if(texts[j].indexOf(name)>-1){ btn=tiles[j]; break; } } } }
+      if(!btn) return;
+      btn=(btn.classList&&btn.classList.contains('challenge-button'))?btn:((btn.querySelector&&btn.querySelector('.challenge-button'))||btn);
+      if(!isSolved(btn) && !btn.querySelector('.vt-no-attempts')){
+        var box=document.createElement('div'); box.className='vt-no-attempts'; box.textContent='0 Tries Remaining';
+        (btn.querySelector('.challenge-inner')||btn).appendChild(box);
+      }
+    });
+  }
+  function markExhausted(cid){
+    if(cid==null) return;
+    getJSON('/api/v1/challenges/'+cid).then(function(d){
+      if(!d||!d.data) return;
+      var mx=d.data.max_attempts||0, at=d.data.attempts||0;
+      if(mx>0 && at>=mx){ _exhausted[cid]=1; addBox(cid); saveTries(); }
+    });
+  }
+  function installReveal(){
+    // shared handler: instant "0 Tries Remaining" + reveal-refresh after solving an intro
+    function onAttempt(cid, status){
+      if(cid!=null && status!=='correct'){                 // an attempt was spent
+        _tries[cid]=(_tries[cid]||0)+1;
+        var mx=maxFor(cid);
+        if(mx!==Infinity){ if(_tries[cid]>=mx){ _exhausted[cid]=1; addBox(cid); } }  // common path: instant badge, ZERO API calls
+        else if(!isIntro(cid)){ setTimeout(function(){ markExhausted(cid); },400); } // rare: tile value not loaded yet -> one confirming call
+      }
+      if(status==='correct' && (isIntro(cid) || introIds[cid])){ setTimeout(function(){ try{location.reload();}catch(e){} },800); }
+    }
+    // catch submissions made via fetch
+    var _f=window.fetch.bind(window);
+    window.fetch=function(input,initArg){
+      var pr=_f(input,initArg);
+      try{
+        var url=(typeof input==='string')?input:(input&&input.url);
+        var body=null; try{ body=JSON.parse((initArg&&initArg.body)||'null'); }catch(e){}
+        var attempt=(body && body.challenge_id!=null && ('submission' in body)) || (url && url.indexOf('attempt')>-1);
+        if(attempt){
+          var cid=body?body.challenge_id:null;
+          pr.then(function(res){ res.clone().json().then(function(j){
+            onAttempt(cid, j&&j.data&&String(j.data.status).toLowerCase());
+          }).catch(function(){}); });
+        }
+      }catch(e){}
+      return pr;
+    };
+    // catch submissions made via XMLHttpRequest (CTFd's JS client)
+    try{
+      var _o=XMLHttpRequest.prototype.open, _s=XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.open=function(m,u){ this.__vturl=u; return _o.apply(this,arguments); };
+      XMLHttpRequest.prototype.send=function(b){
+        var self=this;
+        try{
+          var body=null; try{ body=JSON.parse(b||'null'); }catch(e){}
+          var attempt=(body && body.challenge_id!=null && ('submission' in body)) || (self.__vturl && String(self.__vturl).indexOf('attempt')>-1);
+          if(attempt){
+            var cid=body?body.challenge_id:null;
+            self.addEventListener('load',function(){ var st=null; try{ st=String(JSON.parse(self.responseText).data.status).toLowerCase(); }catch(e){} onAttempt(cid, st); });
+          }
+        }catch(e){}
+        return _s.apply(this,arguments);
+      };
+    }catch(e){}
+  }
+
+  /* owner-only: set CTFd's real start/end so the lockout is server-enforced */
+  function startQuiz(btn){
+    if(!confirm('Start the 45-minute quiz now for everyone?')) return;
+    var now=Math.floor(Date.now()/1000), end=now+QUIZ_MIN*60;
+    if(btn) btn.disabled=true;
+    fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
+      headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
+      body:JSON.stringify({start:String(now),end:String(end)})})
+      .then(function(r){return r.json();})
+      .then(function(){ location.reload(); })
+      .catch(function(){ if(btn) btn.disabled=false; alert('Could not start the quiz.'); });
+  }
+
+  /* owner-only: delete every incorrect submission so all teams get their tries back (solves/scores kept) */
+  function clearTries(btn){
+    if(!confirm("Clear ALL submissions — correct AND incorrect — for EVERY account (yihaolim included)? This resets all scores and restores all tries.")) return;
+    var orig = btn ? btn.textContent : '';
+    if(btn){ btn.disabled=true; btn.textContent='Clearing…'; }
+    function collect(page, acc){
+      return getJSON('/api/v1/submissions?per_page=100&page='+page).then(function(r){
+        if(!r||!r.success) return acc;
+        (r.data||[]).forEach(function(s){ acc.push(s.id); });
+        var pg=r.meta&&r.meta.pagination;
+        if(pg && pg.next){ return collect(pg.next, acc); }
+        return acc;
+      }).catch(function(){ return acc; });
+    }
+    collect(1, []).then(function(ids){
+      var i=0;
+      function del(){
+        if(i>=ids.length){ alert('Cleared '+ids.length+' submission(s) (all accounts). Reloading.'); location.reload(); return; }
+        var id=ids[i++];
+        fetch('/api/v1/submissions/'+id,{method:'DELETE',credentials:'same-origin',headers:{'CSRF-Token':INIT.csrfNonce,'Accept':'application/json'}})
+          .then(function(){ del(); }).catch(function(){ del(); });
+      }
+      if(!ids.length){ alert('No submissions to clear.'); if(btn){btn.disabled=false;btn.textContent=orig;} return; }
+      del();
+    });
+  }
+
+  /* pages where NO redirect/gating may ever happen — otherwise login loops forever */
+  function isAuthPage(){
+    var p=location.pathname.replace(/\/+$/,'');
+    return p==='/login' || p==='/logout' || p==='/register' || p==='/setup'
+        || p.indexOf('/reset_password')===0 || p.indexOf('/confirm')===0;
+  }
+
+  /* once end passes: send every non-owner to the team scores page */
+  function enforceLockout(){
+    if(isAuthPage()) return false;               // never trap the login/auth pages
+    var e=endMs(); if(!e || Date.now()<e) return false;
+    if(isOwner) return true;
+    var p=location.pathname.replace(/\/+$/,'');
+    if(p==='/teams' || p.indexOf('/themes')===0) return true;
+    location.replace('/teams'); return true;
+  }
+
+  /* giant timer + Start button on the landing page */
+  function mountLandingTimer(){
+    var host=document.getElementById('vt-timer'); if(!host) return;
+    var btn=document.getElementById('vt-start');
+    if(btn){ if(isOwner && !endMs()){ btn.style.display='inline-block'; btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
+    var clr=document.getElementById('vt-clear');
+    if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
+    (function tick(){
+      var e=endMs();
+      if(!e){ host.textContent='45:00'; host.className='vt-timer vt-idle'; return; }
+      var rem=e-Date.now();
+      host.textContent=fmt(rem);
+      host.className='vt-timer'+(rem<=0?' vt-over':(rem<=60000?' vt-ending':''));
+      if(rem<=0){ enforceLockout(); return; }
+      setTimeout(tick,250);
+    })();
+  }
+
+  /* small countdown pill in the navbar, site-wide, once started */
+  function mountNavTimer(){
+    if(!endMs()) return;
+    var nav=document.querySelector('.navbar .navbar-nav')||document.querySelector('.navbar .container')||document.querySelector('.navbar');
+    if(!nav || document.getElementById('vt-navtimer')) return;
+    var pill=document.createElement('span'); pill.id='vt-navtimer';
+    nav.insertBefore(pill, nav.firstChild);
+    (function tick(){
+      var rem=endMs()-Date.now();
+      pill.textContent=' '+fmt(rem);
+      pill.className=(rem<=60000?'vt-ending':'');
+      if(rem<=0){ pill.textContent=' 00:00'; enforceLockout(); return; }
+      setTimeout(tick,250);
+    })();
+  }
+
+  /* teams listing: reshape the server-rendered table to Team + Team Score, high->low */
+  function teamsList(){
+    var table=document.querySelector('main table')||document.querySelector('.container table');
+    if(!table) return; var tbody=table.querySelector('tbody'); if(!tbody) return;
+    var teams=Array.prototype.slice.call(tbody.querySelectorAll('tr')).map(function(tr){
+      var a=tr.querySelector('a[href*="/teams/"]'); var td=tr.querySelector('td');
+      var id=null; if(a){var m=a.getAttribute('href').match(/\/teams\/(\d+)/); if(m) id=+m[1];}
+      return {id:id, html:(a?a.outerHTML:(td?td.innerHTML:'')), name:(a?a.textContent:(td?td.textContent:'')).trim()};
+    }).filter(function(t){ return t.name && t.name!=='Staff'; });
+    if(!teams.length) return;
+    getJSON('/api/v1/scoreboard').then(function(res){
+      var sc={}; if(res&&res.success&&Array.isArray(res.data)) res.data.forEach(function(e){ sc[e.account_id||e.id]=e.score||0; });
+      teams.forEach(function(t){ t.score=(t.id!=null&&sc[t.id]!=null)?sc[t.id]:0; });
+      teams.sort(function(a,b){ return b.score-a.score || a.name.localeCompare(b.name); });
+      var thead=table.querySelector('thead')||table.createTHead();
+      thead.innerHTML='<tr><th style="width:70px">#</th><th>Team</th><th class="text-end" style="width:170px">Team Score</th></tr>';
+      tbody.innerHTML='';
+      teams.forEach(function(t,i){
+        var tr=document.createElement('tr');
+        tr.innerHTML='<td>'+(i+1)+'</td><td>'+t.html+'</td><td class="text-end fw-bold">'+t.score+'</td>';
+        tbody.appendChild(tr);
+      });
+    });
+  }
+
+  function teamPage(id){
+    getJSON('/api/v1/teams/'+id).then(function(res){
+      if(!res||!res.success||!res.data||res.data.score==null) return;
+      var table=document.querySelector('main table')||document.querySelector('.container table');
+      if(!table) return; var tbody=table.querySelector('tbody'); if(!tbody||tbody.querySelector('.vt-team-total')) return;
+      var sample=tbody.querySelector('tr'); var cols=sample?sample.children.length:2;
+      var tr=document.createElement('tr'); tr.className='vt-team-total';
+      tr.innerHTML='<td colspan="'+Math.max(1,cols-1)+'" class="text-end fw-bold">Team Score</td><td class="text-end fw-bold">'+res.data.score+'</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* recolor ECharts charts (score-over-time, category breakdown, scoreboard) to the
+     matrix palette; hide any chart we can't reach so nothing clashes with the theme */
+  function themeCharts(){
+    var ec = window.echarts;
+    document.querySelectorAll('[_echarts_instance_]').forEach(function(el){
+      var inst = (ec && ec.getInstanceByDom) ? ec.getInstanceByDom(el) : null;
+      if(inst){
+        try{
+          inst.setOption({
+            backgroundColor:'transparent',
+            textStyle:{ color:'#cfffe0', fontFamily:"'Share Tech Mono', monospace" },
+            color:['#00ff6a','#4c8dff','#19d3c5','#f5b94a','#ff6b6b','#9af0cf','#b388ff'],
+            legend:{ textStyle:{ color:'#cfffe0' } },
+            xAxis:{ axisLabel:{color:'#8fe0ad'}, axisLine:{lineStyle:{color:'#1c6e43'}}, splitLine:{lineStyle:{color:'rgba(0,255,106,.10)'}} },
+            yAxis:{ axisLabel:{color:'#8fe0ad'}, axisLine:{lineStyle:{color:'#1c6e43'}}, splitLine:{lineStyle:{color:'rgba(0,255,106,.10)'}} }
+          }, false, true);
+        }catch(e){ el.style.display='none'; }
+      } else {
+        el.style.display='none';
+      }
+    });
+  }
+
+  function waitFor(sel, cb, tries){ tries=(tries==null?40:tries);
+    if(document.querySelector(sel)) return cb();
+    if(tries<=0) return; setTimeout(function(){ waitFor(sel,cb,tries-1); },300); }
+
+  /* owner only: rebuild the Users page as a monitor — User | Last Seen | Status
+     (drops website/affiliation/country). "Status" is approximated from recent activity,
+     since CTFd has no real presence flag; Last Seen comes from admin-only tracking data. */
+  function usersPage(){
+    if(!isOwner) return;
+    var table=document.querySelector('main table')||document.querySelector('.container table');
+    if(!table) return; var tbody=table.querySelector('tbody'); if(!tbody) return;
+    var items=Array.prototype.slice.call(tbody.querySelectorAll('tr')).map(function(tr){
+      var a=tr.querySelector('a[href*="/users/"]'); var td=tr.querySelector('td');
+      var id=null; if(a){var m=a.getAttribute('href').match(/\/users\/(\d+)/); if(m) id=+m[1];}
+      return {id:id, html:(a?a.outerHTML:(td?td.innerHTML:'')), name:(a?a.textContent:(td?td.textContent:'')).trim()};
+    }).filter(function(u){ return u.name; });
+    if(!items.length) return;
+    var thead=table.querySelector('thead')||table.createTHead();
+    thead.innerHTML='<tr><th style="width:60px">#</th><th>User</th><th>Last Seen</th><th style="width:130px">Status</th></tr>';
+    tbody.innerHTML='';
+    items.forEach(function(u,i){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+(i+1)+'</td><td>'+u.html+'</td><td class="vt-ls" data-uid="'+u.id+'">…</td><td class="vt-st" data-uid="'+u.id+'">…</td>';
+      tbody.appendChild(tr);
+    });
+    var q=items.slice(), POOL=6;
+    function next(){
+      if(!q.length) return; var u=q.shift();
+      getJSON('/api/v1/users/'+u.id).then(function(d){
+        var ts=null;
+        if(d&&d.data){
+          ts=d.data.last_visit||d.data.last_seen||d.data.last_login||null;
+          if(!ts && Array.isArray(d.data.tracking) && d.data.tracking.length){ ts=d.data.tracking[d.data.tracking.length-1].date; }
+        }
+        var ls=document.querySelector('.vt-ls[data-uid="'+u.id+'"]'), st=document.querySelector('.vt-st[data-uid="'+u.id+'"]');
+        if(ts){ var dt=new Date(ts); var active=(Date.now()-dt.getTime())<5*60*1000;
+          if(ls) ls.textContent=isNaN(dt.getTime())?String(ts):dt.toLocaleString();
+          if(st) st.innerHTML=active?'<span style="color:#00ff6a">● Active</span>':'<span style="color:#4f8f68">○ Offline</span>';
+        } else { if(ls) ls.textContent='—'; if(st) st.textContent='—'; }
+      }).then(next).catch(function(){ next(); });
+    }
+    for(var k=0;k<POOL;k++) next();
+  }
+
+  /* owner only: rename the Team tab to "Standings", point it at the sorted team table, and move it beside Users */
+  function setupOwnerNav(){
+    if(!isOwner) return;
+    var team=document.querySelector('.navbar a.nav-link[href$="/team"]');
+    var users=document.querySelector('.navbar a.nav-link[href$="/users"]');
+    if(!team || team.id==='vt-standings') return;
+    team.textContent='Standings';
+    team.setAttribute('href','/teams');
+    team.id='vt-standings';
+    team.style.setProperty('display','inline-block','important');  // beat the /teams hide rule
+    if(users){
+      var ti=(team.closest&&team.closest('li'))||team;
+      var ui=(users.closest&&users.closest('li'))||users;
+      if(ui.parentNode){ ui.parentNode.insertBefore(ti, ui.nextSibling); }
+    }
+  }
+
+  /* end users only get the Challenges tab once the quiz has started (end-time set) */
+  function gateChallenges(){
+    if(isOwner) return false;                 // owner always has access
+    if(endMs()) return false;                 // quiz started -> normal access (end handled by enforceLockout)
+    document.querySelectorAll('.navbar a.nav-link[href$="/challenges"]').forEach(function(a){ a.style.display='none'; });
+    var p=location.pathname.replace(/\/+$/,'');
+    if(p==='/challenges'){ location.replace('/'); return true; }
+    if(p===''){ if(!window.__vtPoll){ window.__vtPoll=1;   // auto-enter when quiz starts; jittered 15-30s so 300 clients don't reload in one spike
+      setTimeout(function(){ location.reload(); }, 15000+Math.floor(Math.random()*15000)); } }
+    return false;
+  }
+
+  function run(){
+    if(isAuthPage()) return;                 // login/register/reset: render plainly, never redirect (prevents the login loop at 0:00)
+    if(enforceLockout()) return;             // ended -> non-owner sent to /teams
+    var p=location.pathname.replace(/\/+$/,'');
+    if(isOwner && p==='/team'){ location.replace('/teams'); return; }  // owner's Team tab -> sorted team table (not the Staff team)
+    if(gateChallenges()) return;             // not started -> non-owner kept out of /challenges
+    setupOwnerNav();                         // owner: Team -> "Standings" beside Users
+    mountNavTimer();
+    mountLandingTimer();
+    [600,1600,3000].forEach(function(d){ setTimeout(themeCharts,d); });  // theme any ECharts charts on this page
+    if(p==='/teams'){ teamsList(); }
+    var m=p.match(/^\/teams\/(\d+)$/); if(m){ teamPage(m[1]); }
+    if(p==='/challenges'){
+      Promise.all([getJSON('/api/v1/challenges'), getJSON('/api/v1/teams/me/fails')]).then(function(r){
+        var list=r[0], fails=r[1];
+        if(list&&list.data) list.data.forEach(function(c){ chalVal[c.id]=c.value; chalName[c.id]=c.name; if((c.value||0)===0) introIds[c.id]=1; });
+        var fc={};
+        if(fails&&fails.data) fails.data.forEach(function(f){ var id=(f.challenge_id!=null)?f.challenge_id:(f.challenge&&f.challenge.id); if(id!=null) fc[id]=(fc[id]||0)+1; });
+        Object.keys(fc).forEach(function(id){ var n=+id; _tries[n]=fc[id]; if(fc[id]>=maxFor(n)) _exhausted[n]=1; });   // server-truth, so an admin "Clear All Tries" wipes the badges too
+        reapplyBadges();
+      });
+      waitFor('.challenge-button, .card', function(){ orderBoard(); observeBoard(); reapplyBadges(); });
+    }
+    if(p==='/users'){ waitFor('main table, .container table', usersPage); }
+  }
+  installReveal();  // wrap fetch/XHR immediately (in <head>, before CTFd's scripts capture them)
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+})();
+</script>
