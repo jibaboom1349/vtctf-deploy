@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "challenges": [
+    {
+      "id": 25,
+      "name": "3.3. Weaponised CVE-2023-23397 samples by Fancy Bear (Aug 2025)",
+      "description": "Identify the single file weaponised against CVE-2023-23397 that was last seen in August 2025 and attributed to Fancy Bear (APT28). Submit its SHA-256 hash."
+    },
+    {
+      "id": 30,
+      "name": "4.2. Typo-squatting domains similar to brand",
+      "description": "Write the search term to start looking at typo-squating domains similar to the Google brand, that has at least 1 URL detection as malicious.\r\n"
+    },
+    {
+      "id": 32,
+      "name": "4.4. Active Phishing URLs",
+      "description": "Instead of a live count, write the full VTI query you would use. Starting from `entity:url fuzzy_hostname:www.google.com NOT parent_domain:google.com`, add the modifiers to find phishing URLs masquerading as www.google.com with more than 10 positive detections, last seen in August 2025. Submit the complete query string."
+    },
+    {
+      "id": 34,
+      "name": "4.6. Searching for content in webpages",
+      "description": "Instead of a live count, write the VTI query that finds websites mimicking a PayPal login page using the favicon dhash `e08c8cccf0360606`, first seen in January 2026, with at least 1 positive detection. Submit the query string."
+    },
+    {
+      "id": 36,
+      "name": "5.2. Searching for Rhysida Ransomware",
+      "description": "Write the VirusTotal Intelligence search term that searches for Rhysida ransomware samples uploaded to VirusTotal"
+    },
+    {
+      "id": 37,
+      "name": "5.2.1 Searching for Rhysida Ransomware Executables",
+      "description": "Instead of a live count, write the VirusTotal Intelligence (VTI) search query that finds Rhysida ransomware samples that are Windows DLL files, have at least 1 detection, and were first submitted during August 2025. Submit the query string (not a number)."
+    },
+    {
+      "id": 41,
+      "name": "5.4.1. Domain icon's dhash",
+      "description": "As part of the VT Graph investigation, you noticed that some indicators had an embedded domain that is  related to the Dark Web - specifically for anonymous and encrypted mail service. \r\n\r\nWhat is the domain’s icon’s dhash?"
+    },
+    {
+      "id": 42,
+      "name": "5.5. Onion Website on ransom note",
+      "description": "You’ve determined that there is a ransom note previously. What is the onion website on the ransom note that a victim will have to access in order to pay their ransom? \r\n\r\nSubmit any of one of the \".onion\" link"
+    },
+    {
+      "id": 46,
+      "name": "6.2 APT-1",
+      "description": "Mandiant's APT-1 analysis was an unprecedented report that conclusively linked many attacks in the US to a specific threat actor that was very likely supported by the Chinese government to further Chinese interest. \r\n\r\nRead the report here.\r\nhttps://services.google.com/fh/files/misc/mandiant-apt1-report.pdf\r\n\r\nMandiant was able to attribute the attacks to a specific unit within the People’s Liberation Army (PLA). Based on the report, what is the name of the unit that Mandiant attributed the attacks to?"
+    }
+  ],
+  "flags": [
+    {
+      "challenge_id": 25,
+      "set": [
+        {
+          "type": "static",
+          "content": "582442ee950d546744f2fa078adb005853a453e9c7f48c6c770e6322a888c2cf",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "https://www.virustotal.com/gui/file/582442ee950d546744f2fa078adb005853a453e9c7f48c6c770e6322a888c2cf/relations",
+          "data": ""
+        }
+      ]
+    },
+    {
+      "challenge_id": 30,
+      "set": [
+        {
+          "type": "static",
+          "content": "entity:domain fuzzy_domain:\"google.com\" urls_max_detections:1+ NOT parent_domain:google.com",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "entity:domain and fuzzy_domain:\"google.com\" and urls_max_detections:1+ NOT parent_domain:google.com",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "entity:domain fuzzy_domain:google.com urls_max_detections:1+ NOT parent_domain:google.com",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "entity:domain and fuzzy_domain:google.com and urls_max_detections:1+ NOT parent_domain:google.com",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "entity:domain fuzzy_domain:”google.com” urls_max_detections:1+ NOT parent_domain:google.com",
+          "data": "case_insensitive"
+        }
+      ]
+    },
+    {
+      "challenge_id": 32,
+      "set": [
+        {
+          "type": "regex",
+          "content": "(?i)^(?=.*fuzzy_hostname:www.google.com)(?=.*(not +parent_domain:google.com|[-]parent_domain:google.com))(?=.*positives:(1[0-9]|[2-9][0-9])[+]?)(?=.*ls:2025-08)(?=.*(ls:2025-09|ls:2025-08-3)).*$",
+          "data": ""
+        }
+      ]
+    },
+    {
+      "challenge_id": 34,
+      "set": [
+        {
+          "type": "regex",
+          "content": "(?i)^(?=.*(dhash:e08c8cccf0360606|main_icon_dhash:e08c8cccf0360606))(?=.*(fs:2026-01|ls:2026-01))(?=.*(fs:2026-02|ls:2026-02|2026-01-3))(?=.*positives:[1-9]).*$",
+          "data": ""
+        }
+      ]
+    },
+    {
+      "challenge_id": 36,
+      "set": [
+        {
+          "type": "static",
+          "content": "entity:file engines:rhysida",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "entity:file and engines:rhysida",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "engines:rhysida",
+          "data": "case_insensitive"
+        }
+      ]
+    },
+    {
+      "challenge_id": 37,
+      "set": [
+        {
+          "type": "regex",
+          "content": "(?i)^(?=.*engines:rhysida)(?=.*(type:pedll|type:dll|tag:pedll))(?=.*(positives:[1-9]|p:[1-9]))(?=.*fs:2025-08)(?=.*(fs:2025-09|fs:2025-08-3)).*$",
+          "data": ""
+        }
+      ]
+    },
+    {
+      "challenge_id": 41,
+      "set": [
+        {
+          "type": "static",
+          "content": "f0cc862b2bb2c4f0",
+          "data": "case_insensitive"
+        }
+      ]
+    },
+    {
+      "challenge_id": 42,
+      "set": [
+        {
+          "type": "static",
+          "content": "http://rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "rhysidafohrhyy2aszi7bm32tnjat5xri65fopcxkdfxhi4tidsg7cad.onion",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "http://rhysidafc6lm7qa2mkiukbezh7zuth3i4wof4mh2audkymscjm6yegad.onion",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "rhysidafc6lm7qa2mkiukbezh7zuth3i4wof4mh2audkymscjm6yegad.onion",
+          "data": "case_insensitive"
+        }
+      ]
+    },
+    {
+      "challenge_id": 46,
+      "set": [
+        {
+          "type": "static",
+          "content": "Unit 61398",
+          "data": "case_insensitive"
+        },
+        {
+          "type": "static",
+          "content": "61398",
+          "data": "case_insensitive"
+        }
+      ]
+    }
+  ]
+}

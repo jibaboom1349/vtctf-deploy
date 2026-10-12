@@ -9,7 +9,7 @@ Run on the droplet (reads config from env):
 
 Pure stdlib — no pip packages required.
 """
-import json, os, re, sys, uuid, urllib.request, urllib.error
+import json, os, re, sys, uuid, subprocess, urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 URL  = (os.environ.get("CTFD_URL") or "").rstrip("/")
@@ -152,6 +152,66 @@ if os.path.exists(_reset_file):
         except Exception:
             pass
         print("RESET #%s applied: deleted %d submission(s); timer->idle 45:00; challenges hidden until Start" % (_want, _n))
+
+# ---- 0c) content patches: challenge text + flags, applied from git via the DB --
+#   Lets changes to descriptions/names/flags ship through git like the theme does.
+#   Version-gated (marker outside the repo) and idempotent (flags are replaced per
+#   challenge). Uses the DB directly (reliable) rather than the flaky list API.
+def _sqlq(v):
+    return str("" if v is None else v).replace("\\", "\\\\").replace("'", "''")
+
+def apply_content_patches():
+    pf = os.path.join(HERE, "content_patches.json")
+    if not os.path.exists(pf):
+        return
+    try:
+        patches = json.load(open(pf, encoding="utf-8"))
+    except Exception as e:
+        print("content_patches: bad JSON:", e); return
+    ver = str(patches.get("version", ""))
+    marker = os.path.join(os.path.dirname(HERE), ".vt_content_ver")
+    have = ""
+    try: have = open(marker, encoding="utf-8").read().strip()
+    except Exception: pass
+    if not ver or ver == have:
+        return
+    stack = os.environ.get("CTFD_STACK_DIR") or "/opt/ctfd"
+    pwd = os.environ.get("MYSQL_PASSWORD") or ""
+    compose = os.path.join(stack, "docker-compose.yml")
+    if not pwd or not os.path.exists(compose):
+        print("content_patches: MYSQL_PASSWORD or compose file missing; skipping"); return
+    sql = ["SET NAMES utf8mb4;"]
+    for c in patches.get("challenges", []):
+        cid = int(c["id"]); sets = []
+        if c.get("name") is not None:        sets.append("name='%s'" % _sqlq(c["name"]))
+        if c.get("description") is not None: sets.append("description='%s'" % _sqlq(c["description"]))
+        if sets:
+            sql.append("UPDATE challenges SET %s WHERE id=%d;" % (", ".join(sets), cid))
+    for g in patches.get("flags", []):
+        cid = int(g["challenge_id"])
+        sql.append("DELETE FROM flags WHERE challenge_id=%d;" % cid)
+        for f in g.get("set", []):
+            sql.append("INSERT INTO flags (challenge_id,type,content,data) VALUES (%d,'%s','%s','%s');"
+                       % (cid, _sqlq(f.get("type", "static")), _sqlq(f.get("content", "")), _sqlq(f.get("data", ""))))
+    script = "\n".join(sql) + "\n"
+    base = ["docker", "compose", "-f", compose, "exec", "-T"]
+    try:
+        p = subprocess.run(base + ["-e", "MYSQL_PWD=" + pwd, "db", "mysql", "-uctfd", "ctfd"],
+                           input=script.encode("utf-8"), capture_output=True, timeout=120)
+        if p.returncode != 0:
+            print("content_patches: mysql error:", (p.stderr or b"").decode()[:300]); return
+    except Exception as e:
+        print("content_patches: could not run mysql:", e); return
+    try:
+        subprocess.run(base + ["cache", "redis-cli", "FLUSHALL"], capture_output=True, timeout=60)
+    except Exception:
+        pass
+    try: open(marker, "w", encoding="utf-8").write(ver)
+    except Exception: pass
+    print("content_patches v%s applied: %d challenge(s), %d flag-group(s)"
+          % (ver, len(patches.get("challenges", [])), len(patches.get("flags", []))))
+
+apply_content_patches()
 
 # ---- 1) ensure the rain GIF is hosted, so the theme background resolves ------
 #   The DB can list a matrix_rain.gif whose file is gone (e.g. an import that
