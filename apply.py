@@ -9,7 +9,7 @@ Run on the droplet (reads config from env):
 
 Pure stdlib — no pip packages required.
 """
-import json, os, re, sys, urllib.request, urllib.error
+import json, os, re, sys, uuid, urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 URL  = (os.environ.get("CTFD_URL") or "").rstrip("/")
@@ -24,13 +24,52 @@ def api(method, path, body=None):
     req.add_header("Content-Type", "application/json")
     req.add_header("Accept", "application/json")
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with urllib.request.urlopen(req, timeout=60) as r:
             raw = r.read().decode() or "{}"
             return json.loads(raw)
     except urllib.error.HTTPError as e:
         sys.exit(f"API {method} {path} failed: {e.code} {e.read().decode()[:300]}")
     except Exception as e:
         sys.exit(f"API {method} {path} error: {e}")
+
+def file_served(loc):
+    """True only if the file is actually downloadable (row may exist but file be missing)."""
+    req = urllib.request.Request(URL + "/files/" + loc, method="GET")
+    req.add_header("Authorization", "Token " + TOK)
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return r.status == 200
+    except Exception:
+        return False
+
+def upload_gif():
+    """Upload matrix_rain.gif from the repo to CTFd as a standard file; return its location."""
+    path = os.path.join(HERE, "matrix_rain.gif")
+    if not os.path.exists(path):
+        return None
+    with open(path, "rb") as f:
+        content = f.read()
+    boundary = "----vtctf" + uuid.uuid4().hex
+    nl = b"\r\n"
+    parts = []
+    parts += [b"--" + boundary.encode(),
+              b'Content-Disposition: form-data; name="file"; filename="matrix_rain.gif"',
+              b"Content-Type: image/gif", b"", content]
+    parts += [b"--" + boundary.encode(),
+              b'Content-Disposition: form-data; name="type"', b"", b"standard"]
+    parts += [b"--" + boundary.encode() + b"--", b""]
+    body = nl.join(parts)
+    req = urllib.request.Request(URL + "/api/v1/files", data=body, method="POST")
+    req.add_header("Authorization", "Token " + TOK)
+    req.add_header("Content-Type", "multipart/form-data; boundary=" + boundary)
+    req.add_header("Accept", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=120) as r:
+            j = json.loads(r.read().decode() or "{}")
+        return (j.get("data") or [{}])[0].get("location")
+    except Exception as e:
+        print("WARNING: GIF upload failed:", e)
+        return None
 
 def strip_comments(s):
     return re.sub(r"<!--.*?-->", "", s, flags=re.S).strip()
@@ -39,17 +78,24 @@ def read(name):
     with open(os.path.join(HERE, name), encoding="utf-8") as f:
         return f.read()
 
-# ---- 1) find where the rain GIF is hosted so the theme bg resolves ----------
+# ---- 1) ensure the rain GIF is hosted, so the theme background resolves ------
+#   The DB can list a matrix_rain.gif whose file is gone (e.g. an import that
+#   restored records but not uploads). So require it to actually download;
+#   otherwise upload a fresh copy. After one upload this just finds it (no re-upload).
 gif_url = ""
 files = api("GET", "/api/v1/files?per_page=100")
 for row in (files.get("data") or []):
     loc = row.get("location") or ""
-    if loc.endswith("matrix_rain.gif"):
+    if loc.endswith("matrix_rain.gif") and file_served(loc):
         gif_url = "/files/" + loc
         break
 if not gif_url:
-    print("WARNING: matrix_rain.gif not found in CTFd files — background will be blank. "
-          "Re-import the full zip once so the GIF is hosted, then re-run.")
+    new_loc = upload_gif()
+    if new_loc and file_served(new_loc):
+        gif_url = "/files/" + new_loc
+        print("uploaded matrix_rain.gif ->", gif_url)
+    else:
+        print("WARNING: could not host matrix_rain.gif — background will be blank.")
 
 # ---- 2) theme_header + ordering functions (kept in sync with build.py) ------
 theme = strip_comments(read("theme_header_matrix_gif.html")).replace(">>> GIF_URL <<<", gif_url)
