@@ -369,22 +369,33 @@
     }).catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not start the quiz.'); });
   }
 
-  /* owner-only: FULL reset to the pristine pre-start state —
-     wipe all tries + scores (every account incl. yihaolim) AND stop the timer. */
-  function stopTimer(){
-    return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
+  /* owner-only: END the quiz NOW — set end into the past so every end user is
+     immediately locked to the standings page (Logout only), exactly like a
+     natural timeout. Scores are kept. */
+  function stopQuiz(btn){
+    if(!confirm('End the quiz NOW?\n\nThe timer stops immediately and every end user is locked to the standings page (only Logout), the same as when time runs out. Team scores are kept.')) return;
+    var orig = btn ? btn.textContent : '';
+    if(btn){ btn.disabled=true; btn.textContent='Ending…'; }
+    var now=Math.floor(Date.now()/1000);
+    fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
       headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-      body:JSON.stringify({start:'',end:''})}).then(function(r){return r.json();});
+      body:JSON.stringify({start:String(now-2), end:String(now-1)})})   // both in the past -> lockout
+      .then(function(r){return r.json();})
+      .then(function(){ location.reload(); })
+      .catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not end the quiz.'); });
   }
+
+  /* owner-only: clear all tries + team scores (every account incl. yihaolim)
+     AND reset the timer to an idle 45:00 (stopped, ready to start again). */
   function clearTries(btn){
-    if(!confirm("Reset EVERYTHING now?\n\nDeletes all submissions (tries + scores, every account incl. yihaolim) AND stops the quiz timer — back to the idle pre-start state.")) return;
+    if(!confirm("Reset all tries now?\n\nClears every team's attempts, tries and scores (all accounts incl. yihaolim) AND resets the timer to 45:00 (stopped, ready to start).")) return;
     var orig = btn ? btn.textContent : '';
     if(btn){ btn.disabled=true; btn.textContent='Resetting…'; }
     wipeAllSubmissions().then(function(n){
-      return stopTimer().then(function(){
-        alert('Reset complete — cleared '+n+' submission(s) and stopped the timer. Reloading.');
-        location.reload();
-      });
+      return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
+        headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
+        body:JSON.stringify({start:'', end:''})}).then(function(r){return r.json();})     // clear start/end -> idle 45:00
+        .then(function(){ alert('Reset complete — cleared '+n+' submission(s) and reset the timer to 45:00. Reloading.'); location.reload(); });
     }).catch(function(){ if(btn){btn.disabled=false;btn.textContent=orig;} alert('Reset failed — try again.'); });
   }
 
@@ -432,6 +443,24 @@
     }
   }
 
+  /* non-owner: while a quiz is scheduled, poll the server's end time so an
+     early "End Quiz Now" (or a Reset/Restart) reaches already-open pages.
+     The server renders the live end into window.init of every page, so we read
+     it from the landing HTML (public) and reload when it changed / passed. */
+  function watchEnd(){
+    if(isOwner || window.__vtWatch) return;
+    window.__vtWatch = 1;
+    setInterval(function(){
+      fetch('/', {credentials:'same-origin'}).then(function(r){return r.text();}).then(function(html){
+        var m = html.match(/["']end["']\s*:\s*"?(\d+)/);
+        var serverEnd = m ? (+m[1])*1000 : 0;
+        var cur = endMs();
+        if(serverEnd && serverEnd<=Date.now() && (!cur || cur>Date.now())){ location.reload(); return; } // ended early -> lock out
+        if(Math.abs(serverEnd - cur) > 1500){ location.reload(); }                                       // end changed (reset/restart) -> re-sync
+      }).catch(function(){});
+    }, 20000 + Math.floor(Math.random()*10000));
+  }
+
   /* giant timer + Start button on the landing page */
   function mountLandingTimer(){
     var host=document.getElementById('vt-timer'); if(!host) return;
@@ -440,8 +469,10 @@
     if(btn){ if(isOwner){ btn.style.display='inline-block';         // owner can start OR restart at ANY time
         btn.textContent = quizRunning ? '↻ Restart Quiz (resets all)' : '▶ Start 45-min Quiz';
         btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
+    var stp=document.getElementById('vt-stop');
+    if(stp){ if(isOwner && quizRunning){ stp.style.display='inline-block'; stp.addEventListener('click',function(){stopQuiz(stp);}); } else { stp.style.display='none'; } }
     var clr=document.getElementById('vt-clear');
-    if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.textContent='✖ Reset All & Stop Timer'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
+    if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.textContent='✖ Reset All Tries'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
     (function tick(){
       var e=endMs();
       if(!e){ host.textContent='45:00'; host.className='vt-timer vt-idle'; return; }
@@ -616,6 +647,7 @@
     [600,1600,3000].forEach(function(d){ setTimeout(themeCharts,d); });  // theme any ECharts charts on this page
     if(p==='/teams'){ teamsList(); }
     if(isLocked()){ waitFor('.navbar a', lockdownNav); }   // post-quiz: only Logout stays clickable
+    watchEnd();                                            // non-owner: react to an early End/Reset within ~25s
     var m=p.match(/^\/teams\/(\d+)$/); if(m){ teamPage(m[1]); }
     if(p==='/challenges'){
       Promise.all([getJSON('/api/v1/challenges'), getJSON('/api/v1/teams/me/fails')]).then(function(r){
