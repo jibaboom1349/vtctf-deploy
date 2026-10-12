@@ -327,24 +327,10 @@
     }catch(e){}
   }
 
-  /* owner-only: set CTFd's real start/end so the lockout is server-enforced */
-  function startQuiz(btn){
-    if(!confirm('Start the 45-minute quiz now for everyone?')) return;
-    var now=Math.floor(Date.now()/1000), end=now+QUIZ_MIN*60;
-    if(btn) btn.disabled=true;
-    fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
-      headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
-      body:JSON.stringify({start:String(now),end:String(end)})})
-      .then(function(r){return r.json();})
-      .then(function(){ location.reload(); })
-      .catch(function(){ if(btn) btn.disabled=false; alert('Could not start the quiz.'); });
-  }
-
-  /* owner-only: delete every incorrect submission so all teams get their tries back (solves/scores kept) */
-  function clearTries(btn){
-    if(!confirm("Clear ALL submissions — correct AND incorrect — for EVERY account (yihaolim included)? This resets all scores and restores all tries.")) return;
-    var orig = btn ? btn.textContent : '';
-    if(btn){ btn.disabled=true; btn.textContent='Clearing…'; }
+  /* owner-only: delete EVERY submission (correct AND incorrect, all accounts).
+     Correct submissions are solves, so removing them also zeroes team scores;
+     removing incorrect ones restores all tries. Returns a Promise(count). */
+  function wipeAllSubmissions(){
     function collect(page, acc){
       return getJSON('/api/v1/submissions?per_page=100&page='+page).then(function(r){
         if(!r||!r.success) return acc;
@@ -354,16 +340,43 @@
         return acc;
       }).catch(function(){ return acc; });
     }
-    collect(1, []).then(function(ids){
-      var i=0;
-      function del(){
-        if(i>=ids.length){ alert('Cleared '+ids.length+' submission(s) (all accounts). Reloading.'); location.reload(); return; }
-        var id=ids[i++];
-        fetch('/api/v1/submissions/'+id,{method:'DELETE',credentials:'same-origin',headers:{'CSRF-Token':INIT.csrfNonce,'Accept':'application/json'}})
-          .then(function(){ del(); }).catch(function(){ del(); });
-      }
-      if(!ids.length){ alert('No submissions to clear.'); if(btn){btn.disabled=false;btn.textContent=orig;} return; }
-      del();
+    return collect(1, []).then(function(ids){
+      return new Promise(function(resolve){
+        var i=0;
+        (function del(){
+          if(i>=ids.length){ resolve(ids.length); return; }
+          var id=ids[i++];
+          fetch('/api/v1/submissions/'+id,{method:'DELETE',credentials:'same-origin',
+            headers:{'CSRF-Token':INIT.csrfNonce,'Accept':'application/json'}})
+            .then(function(){ del(); }).catch(function(){ del(); });
+        })();
+      });
+    });
+  }
+
+  /* owner-only: FULL reset (wipe all tries + all team scores) then start a fresh 45-min quiz */
+  function startQuiz(btn){
+    if(!confirm('Start a fresh 45-minute quiz now?\n\nThis RESETS everything first — all tries AND all team scores for every account (yihaolim included) — then starts the clock.')) return;
+    var orig = btn ? btn.textContent : '';
+    if(btn){ btn.disabled=true; btn.textContent='Resetting…'; }
+    wipeAllSubmissions().then(function(){
+      var now=Math.floor(Date.now()/1000), end=now+QUIZ_MIN*60;
+      return fetch('/api/v1/configs',{method:'PATCH',credentials:'same-origin',
+        headers:{'Content-Type':'application/json','Accept':'application/json','CSRF-Token':INIT.csrfNonce},
+        body:JSON.stringify({start:String(now),end:String(end)})})
+        .then(function(r){return r.json();})
+        .then(function(){ location.reload(); });
+    }).catch(function(){ if(btn){ btn.disabled=false; btn.textContent=orig; } alert('Could not start the quiz.'); });
+  }
+
+  /* owner-only: wipe all tries + scores WITHOUT touching the timer */
+  function clearTries(btn){
+    if(!confirm("Clear ALL submissions — correct AND incorrect — for EVERY account (yihaolim included)? This resets all scores and restores all tries.")) return;
+    var orig = btn ? btn.textContent : '';
+    if(btn){ btn.disabled=true; btn.textContent='Clearing…'; }
+    wipeAllSubmissions().then(function(n){
+      if(!n){ alert('No submissions to clear.'); if(btn){btn.disabled=false;btn.textContent=orig;} return; }
+      alert('Cleared '+n+' submission(s) (all accounts). Reloading.'); location.reload();
     });
   }
 
