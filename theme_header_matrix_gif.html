@@ -375,15 +375,16 @@
   }
 
   /* once end passes: send every non-owner to the team scores page.
-     The owner is NEVER locked out — it must return false so run() keeps
-     going and the owner's Start/Clear buttons + nav still mount after a quiz ends. */
+     Returns true ONLY when it redirects (so run() bails). When the locked user
+     is already on an allowed page (/teams), it returns false so run() CONTINUES
+     and renders the standings table. The owner is never locked out. */
   function enforceLockout(){
     if(isAuthPage()) return false;               // never trap the login/auth pages
     if(isOwner) return false;                    // owner always keeps full controls
-    var e=endMs(); if(!e || Date.now()<e) return false;
+    var e=endMs(); if(!e || Date.now()<e) return false;   // quiz not over yet
     var p=location.pathname.replace(/\/+$/,'');
-    if(p==='/teams' || p.indexOf('/themes')===0) return true;
-    location.replace('/teams'); return true;
+    if(p==='/teams' || p.indexOf('/teams/')===0 || p.indexOf('/themes')===0) return false; // allowed here -> let run() build standings
+    location.replace('/teams'); return true;     // locked elsewhere -> redirect to standings, bail run()
   }
 
   /* giant timer + Start button on the landing page */
