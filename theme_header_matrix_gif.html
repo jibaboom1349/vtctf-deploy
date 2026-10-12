@@ -642,6 +642,26 @@
     return false;                               // watchEnd() reloads them in automatically once you Start
   }
 
+  /* periodically reconcile the tile badges with the server's own fail records, so an
+     admin re-grade / Clear / flag change updates every open board live (no refresh needed) */
+  function syncBadges(){
+    if(location.pathname.replace(/\/+$/,'')!=='/challenges') return;
+    Promise.all([getJSON('/api/v1/challenges'), getJSON('/api/v1/teams/me/fails')]).then(function(r){
+      var list=r[0], fails=r[1];
+      if(list&&list.data) list.data.forEach(function(c){ chalVal[c.id]=c.value; chalName[c.id]=c.name; });
+      var fc={};
+      if(fails&&fails.data) fails.data.forEach(function(f){ var id=(f.challenge_id!=null)?f.challenge_id:(f.challenge&&f.challenge.id); if(id!=null) fc[id]=(fc[id]||0)+1; });
+      var want={};
+      Object.keys(fc).forEach(function(id){ var n=+id; if(fc[id]>=maxFor(n)) want[n]=1; });
+      Object.keys(_exhausted).forEach(function(cid){           // drop badges no longer warranted (re-grade / clear)
+        if(!want[cid]){ delete _exhausted[cid]; var t=findTile(cid); var b=t&&t.querySelector&&t.querySelector('.vt-no-attempts'); if(b) b.remove(); }
+      });
+      _tries={}; Object.keys(fc).forEach(function(id){ _tries[+id]=fc[id]; });
+      Object.keys(want).forEach(function(cid){ _exhausted[cid]=1; });
+      reapplyBadges();
+    });
+  }
+
   function run(){
     if(isAuthPage()) return;                 // login/register/reset: render plainly, never redirect (prevents the login loop at 0:00)
     if(enforceLockout()) return;             // ended -> non-owner sent to /teams
@@ -666,6 +686,7 @@
         reapplyBadges();
       });
       waitFor('.challenge-button, .card', function(){ orderBoard(); observeBoard(); reapplyBadges(); });
+      if(!window.__vtBadgeSync){ window.__vtBadgeSync=setInterval(syncBadges, 30000); }   // keep tiles in sync with server re-grades, live
     }
     if(p==='/users'){ waitFor('main table, .container table', usersPage); }
   }
