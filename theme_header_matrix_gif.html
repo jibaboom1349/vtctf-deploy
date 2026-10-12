@@ -286,8 +286,8 @@
       if(cid!=null && status!=='correct'){                 // an attempt was spent
         _tries[cid]=(_tries[cid]||0)+1;
         var mx=maxFor(cid);
-        if(mx!==Infinity){ if(_tries[cid]>=mx){ _exhausted[cid]=1; addBox(cid); } }  // common path: instant badge, ZERO API calls
-        else if(!isIntro(cid)){ setTimeout(function(){ markExhausted(cid); },400); } // rare: tile value not loaded yet -> one confirming call
+        if(mx!==Infinity && _tries[cid]>=mx){ _exhausted[cid]=1; addBox(cid); }       // instant client-side badge
+        if(!isIntro(cid)){ setTimeout(function(){ markExhausted(cid); },450); }        // authoritative server backstop (one call per wrong attempt)
       }
       if(status==='correct' && (isIntro(cid) || introIds[cid])){ setTimeout(function(){ try{location.reload();}catch(e){} },800); }
     }
@@ -374,11 +374,13 @@
         || p.indexOf('/reset_password')===0 || p.indexOf('/confirm')===0;
   }
 
-  /* once end passes: send every non-owner to the team scores page */
+  /* once end passes: send every non-owner to the team scores page.
+     The owner is NEVER locked out — it must return false so run() keeps
+     going and the owner's Start/Clear buttons + nav still mount after a quiz ends. */
   function enforceLockout(){
     if(isAuthPage()) return false;               // never trap the login/auth pages
+    if(isOwner) return false;                    // owner always keeps full controls
     var e=endMs(); if(!e || Date.now()<e) return false;
-    if(isOwner) return true;
     var p=location.pathname.replace(/\/+$/,'');
     if(p==='/teams' || p.indexOf('/themes')===0) return true;
     location.replace('/teams'); return true;
@@ -388,7 +390,8 @@
   function mountLandingTimer(){
     var host=document.getElementById('vt-timer'); if(!host) return;
     var btn=document.getElementById('vt-start');
-    if(btn){ if(isOwner && !endMs()){ btn.style.display='inline-block'; btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
+    var quizRunning = endMs() && Date.now() < endMs();   // a quiz window is currently open
+    if(btn){ if(isOwner && !quizRunning){ btn.style.display='inline-block'; btn.addEventListener('click',function(){startQuiz(btn);}); } else { btn.style.display='none'; } }
     var clr=document.getElementById('vt-clear');
     if(clr){ if(isOwner){ clr.style.display='inline-block'; clr.addEventListener('click',function(){clearTries(clr);}); } else { clr.style.display='none'; } }
     (function tick(){
