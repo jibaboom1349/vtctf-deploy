@@ -255,6 +255,9 @@ say "Pulling images and starting the stack…"
 docker compose pull
 docker compose up -d
 
+# reload Caddy so a rewritten Caddyfile (e.g. toggling the 2FA gate) takes effect without a full recreate
+docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile 2>/dev/null || docker compose restart caddy
+
 say "Daily backup at 03:30 (cron)…"
 ( crontab -l 2>/dev/null | grep -v "$STACK_DIR/backup.sh" ; echo "30 3 * * * $STACK_DIR/backup.sh >> $STACK_DIR/backup.log 2>&1" ) | crontab -
 
