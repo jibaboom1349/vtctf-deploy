@@ -1,3 +1,5 @@
 # never commit secrets — the admin token lives only on the droplet
 updater.env
 *.log
+__pycache__/
+*.pyc
